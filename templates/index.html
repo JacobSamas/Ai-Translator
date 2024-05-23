@@ -16,9 +16,9 @@
         <h1 class="text-2xl font-semibold text-black mb-6 text-center">AI Translator</h1>
         <textarea id="text-input" class="w-full p-2 border-2 border-black rounded mb-4" rows="5" placeholder="Enter text to translate..."></textarea>
         <select id="language-select" class="w-full p-2 border-2 border-black rounded mb-4">
-            <option value="Hindi">Hindi</option>
-            <option value="English">English</option>
-            <option value="Tamil">Tamil</option>
+            <option value="hi">Hindi</option>
+            <option value="en-IN">English</option>
+            <option value="ta">Tamil</option>
         </select>
         <button id="translate-button" class="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-700 transition duration-300 ease-in-out w-full mb-2">Translate</button>
         <button id="start-recognition" class="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-700 transition duration-300 ease-in-out w-full mb-2">Start Voice Command</button>
@@ -50,7 +50,7 @@
                     translatedTextDiv.textContent = 'Error: ' + data.error;
                 } else {
                     translatedTextDiv.textContent = 'Translated Text: ' + data.translated_text;
-                    speakText(data.translated_text);
+                    speakText(data.translated_text, targetLanguage);
                 }
             })
             .catch(err => {
@@ -76,9 +76,9 @@
         });
 
         // Text to Speech
-        function speakText(text) {
+        function speakText(text, targetLanguage) {
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-IN';
+            utterance.lang = targetLanguage;
             window.speechSynthesis.speak(utterance);
         }
 
