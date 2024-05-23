@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Translator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: white; color: black; }
+        .bg-white { background-color: white; }
+        .text-black { color: black; }
+    </style>
+</head>
+<body class="bg-white flex justify-center items-center min-h-screen">
+    <div class="bg-white p-6 rounded-lg shadow-xl w-96">
+        <h1 class="text-2xl font-semibold text-black mb-6 text-center">AI Translator</h1>
+        <textarea id="text-input" class="w-full p-2 border-2 border-black rounded mb-4" rows="5" placeholder="Enter text to translate..."></textarea>
+        <select id="language-select" class="w-full p-2 border-2 border-black rounded mb-4">
+            <option value="Hindi">Hindi</option>
+            <option value="English">English</option>
+            <option value="Tamil">Tamil</option>
+        </select>
+        <button id="translate-button" class="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-700 transition duration-300 ease-in-out w-full mb-2">Translate</button>
+        <button id="start-recognition" class="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-700 transition duration-300 ease-in-out w-full mb-2">Start Voice Command</button>
+        <div id="loading" class="mt-4 text-center text-blue-500 hidden">Translating...</div>
+        <div id="translated-text" class="mt-4 text-black"></div>
+    </div>
+
+    <script>
+        document.getElementById('translate-button').addEventListener('click', function() {
+            const textInput = document.getElementById('text-input').value;
+            const targetLanguage = document.getElementById('language-select').value;
+            const loadingDiv = document.getElementById('loading');
+            const translatedTextDiv = document.getElementById('translated-text');
+
+            loadingDiv.classList.remove('hidden');
+            translatedTextDiv.textContent = '';
+
+            fetch('http://127.0.0.1:5000/translate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: textInput, language: targetLanguage })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingDiv.classList.add('hidden');
+                if (data.error) {
+                    translatedTextDiv.textContent = 'Error: ' + data.error;
+                } else {
+                    translatedTextDiv.textContent = 'Translated Text: ' + data.translated_text;
+                    speakText(data.translated_text);
+                }
+            })
+            .catch(err => {
+                loadingDiv.classList.add('hidden');
+                translatedTextDiv.textContent = 'Error: ' + err.message;
+            });
+        });
+
+        // Speech Recognition
+        const recognition = new webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = 'en-IN';
+
+        recognition.onresult = (event) => {
+            const speechResult = event.results[0][0].transcript;
+            console.log(speechResult);
+            document.getElementById('text-input').value = speechResult;
+        };
+
+        document.getElementById('start-recognition').addEventListener('click', () => {
+            recognition.start();
+        });
+
+        // Text to Speech
+        function speakText(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-IN';
+            window.speechSynthesis.speak(utterance);
+        }
+
+        document.getElementById('speak-button').addEventListener('click', () => {
+            const text = document.getElementById('translated-text').textContent.replace('Translated Text: ', '');
+            speakText(text);
+        });
+    </script>
+</body>
+</html>
